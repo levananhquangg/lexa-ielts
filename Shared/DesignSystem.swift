@@ -4,12 +4,18 @@ import UIKit
 // MARK: - Palette
 
 enum Palette {
-    static let paper = Color(light: "F7F4ED", dark: "14120D")
+    static let paper = Color(light: "F8F5EE", dark: "100F0B")
     static let card = Color(light: "FFFFFF", dark: "1F1C15")
     static let ink = Color(light: "221D13", dark: "F1ECE1")
     static let muted = Color(light: "6F6757", dark: "9C937F")
     static let hairline = Color(light: "E7E1D2", dark: "322D22")
     static let accent = Color(light: "B4542E", dark: "DE7A4C")
+    static let accentSoft = Color(light: "D08A2E", dark: "E8B05C")
+
+    static let accentGradient = LinearGradient(
+        colors: [Color(light: "B4542E", dark: "DE7A4C"), Color(light: "D08A2E", dark: "E8B05C")],
+        startPoint: .topLeading, endPoint: .bottomTrailing
+    )
 
     static func band(_ band: Int) -> Color {
         switch band {
@@ -19,6 +25,10 @@ enum Palette {
         default: return Color(light: "B4542E", dark: "DE7A4C")
         }
     }
+
+    /// Matches the LaunchBackground asset so the static launch screen and the
+    /// animated splash blend into each other seamlessly.
+    static let splashBack = Color(light: "F7F4ED", dark: "14120D")
 }
 
 extension Color {
@@ -53,27 +63,60 @@ enum Haptics {
     }
 }
 
-// MARK: - Cards
+// MARK: - Glass surfaces
 
-struct CardStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Palette.card)
-                    .shadow(color: .black.opacity(0.05), radius: 10, y: 5)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .strokeBorder(Palette.hairline, lineWidth: 1)
-            )
+extension View {
+    /// Signature surface: real Liquid Glass on iOS 26+, layered material with
+    /// a hairline stroke on older systems.
+    @ViewBuilder
+    func glassCard(cornerRadius: CGFloat = 24, padding: CGFloat = 20) -> some View {
+        self
+            .padding(padding)
+            .modifier(GlassSurface(cornerRadius: cornerRadius))
+    }
+
+    @ViewBuilder
+    func glassSurface(cornerRadius: CGFloat = 24) -> some View {
+        modifier(GlassSurface(cornerRadius: cornerRadius))
     }
 }
 
-extension View {
-    func card() -> some View {
-        modifier(CardStyle())
+private struct GlassSurface: ViewModifier {
+    let cornerRadius: CGFloat
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular, in: shape)
+        } else {
+            content
+                .background(.ultraThinMaterial, in: shape)
+                .overlay(shape.strokeBorder(Palette.hairline, lineWidth: 1))
+        }
+    }
+}
+
+// MARK: - Press feedback
+
+struct PressableStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .opacity(configuration.isPressed ? 0.9 : 1)
+            .animation(.spring(response: 0.28, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Signature flourish
+
+/// The hand-drawn swash that sits under a word — Lexa's small trademark.
+struct Swash: View {
+    var width: CGFloat = 46
+
+    var body: some View {
+        IconPainter.path("M2 7 C12 1.6 30 1.6 42 6")
+            .stroke(Palette.accentGradient, style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
+            .frame(width: width, height: 9)
     }
 }
 
@@ -87,7 +130,8 @@ struct BandChip: View {
             .font(.caption2.weight(.semibold))
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background(Capsule().fill(Palette.band(band).opacity(0.14)))
+            .background(Capsule().fill(Palette.band(band).opacity(0.16)))
+            .overlay(Capsule().strokeBorder(Palette.band(band).opacity(0.4), lineWidth: 1))
             .foregroundStyle(Palette.band(band))
     }
 }
@@ -95,7 +139,7 @@ struct BandChip: View {
 struct SelectableChip: View {
     let title: String
     let selected: Bool
-    var systemImage: String? = nil
+    var systemIcon: AppIcon? = nil
     let action: () -> Void
 
     var body: some View {
@@ -103,9 +147,9 @@ struct SelectableChip: View {
             Haptics.tap()
             action()
         } label: {
-            HStack(spacing: 5) {
-                if let systemImage {
-                    Image(systemName: systemImage).font(.caption2.weight(.semibold))
+            HStack(spacing: 6) {
+                if let systemIcon {
+                    AppIconView(systemIcon, size: 14, color: selected ? .white : Palette.muted, lineWidth: 2)
                 }
                 Text(title)
                     .font(.subheadline.weight(.medium))
@@ -114,11 +158,11 @@ struct SelectableChip: View {
             .padding(.horizontal, 13)
             .padding(.vertical, 8)
             .background(
-                Capsule().fill(selected ? Palette.accent : Palette.hairline.opacity(0.35))
+                Capsule().fill(selected ? AnyShapeStyle(Palette.accentGradient) : AnyShapeStyle(Palette.hairline.opacity(0.35)))
             )
             .foregroundStyle(selected ? Color.white : Palette.ink)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
     }
 }
 

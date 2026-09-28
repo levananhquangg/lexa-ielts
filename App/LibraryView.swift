@@ -42,10 +42,8 @@ struct LibraryView: View {
                     list
                 }
             }
-            .background(Palette.paper.ignoresSafeArea())
             .navigationTitle(L10n.tr("library.title", lang))
             .navigationBarTitleDisplayMode(.large)
-            .searchable(text: $query, prompt: Text(L10n.tr("library.search", lang)))
             .sheet(item: $selected) { word in
                 WordDetailSheet(word: word)
                     .presentationDetents([.medium, .large])
@@ -60,66 +58,95 @@ struct LibraryView: View {
             Text("\(state.progress.records.count)")
                 .font(.system(size: 44, weight: .semibold, design: .serif))
                 .foregroundStyle(Palette.ink)
+                .contentTransition(.numericText())
             VStack(alignment: .leading, spacing: 2) {
                 Text(L10n.tr("library.total", lang))
                     .font(.subheadline)
                     .foregroundStyle(Palette.muted)
-                Label("\(state.progress.savedCount)", systemImage: "bookmark.fill")
-                    .font(.caption)
-                    .foregroundStyle(Palette.accent)
+                Label {
+                    Text("\(state.progress.savedCount)")
+                } icon: {
+                    AppIconView(.bookmark, size: 10, color: Palette.accent, lineWidth: 2.2, filled: true)
+                }
+                .font(.caption)
+                .foregroundStyle(Palette.accent)
             }
             Spacer()
         }
         .padding(.horizontal, 20)
         .padding(.top, 4)
         .padding(.bottom, 14)
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: state.progress.records.count)
     }
 
     private var filters: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                SelectableChip(
-                    title: L10n.tr("library.all", lang),
-                    selected: !savedOnly
-                ) { savedOnly = false }
+        VStack(spacing: 12) {
+            searchField
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    SelectableChip(
+                        title: L10n.tr("library.all", lang),
+                        selected: !savedOnly
+                    ) { savedOnly = false }
 
-                SelectableChip(
-                    title: L10n.tr("library.saved", lang),
-                    selected: savedOnly,
-                    systemImage: "bookmark"
-                ) { savedOnly = true }
+                    SelectableChip(
+                        title: L10n.tr("library.saved", lang),
+                        selected: savedOnly,
+                        systemIcon: .bookmark
+                    ) { savedOnly = true }
 
-                Menu {
-                    Picker(L10n.tr("library.band", lang), selection: $bandFilter) {
-                        Text(L10n.tr("library.all", lang)).tag(Int?.none)
-                        ForEach(Band.allCases) { band in
-                            Text(band.label).tag(Int?.some(band.rawValue))
+                    Menu {
+                        Picker(L10n.tr("library.band", lang), selection: $bandFilter) {
+                            Text(L10n.tr("library.all", lang)).tag(Int?.none)
+                            ForEach(Band.allCases) { band in
+                                Text(band.label).tag(Int?.some(band.rawValue))
+                            }
                         }
+                    } label: {
+                        FilterMenuLabel(
+                            title: L10n.tr("library.band", lang),
+                            value: bandFilter.flatMap { Band(rawValue: $0)?.shortLabel }
+                        )
                     }
-                } label: {
-                    FilterMenuLabel(
-                        title: L10n.tr("library.band", lang),
-                        value: bandFilter.flatMap { Band(rawValue: $0)?.shortLabel }
-                    )
+
+                    Menu {
+                        Picker(L10n.tr("library.topic", lang), selection: $topicFilter) {
+                            Text(L10n.tr("library.all", lang)).tag(String?.none)
+                            ForEach(Topic.all) { topic in
+                                Text(L10n.tr("topic.\(topic.code)", lang)).tag(String?.some(topic.code))
+                            }
+                        }
+                    } label: {
+                        FilterMenuLabel(
+                            title: L10n.tr("library.topic", lang),
+                            value: topicFilter.map { L10n.tr("topic.\($0)", lang) }
+                        )
+                    }
                 }
+                .padding(.horizontal, 20)
+            }
+        }
+        .padding(.bottom, 12)
+    }
 
-                Menu {
-                    Picker(L10n.tr("library.topic", lang), selection: $topicFilter) {
-                        Text(L10n.tr("library.all", lang)).tag(String?.none)
-                        ForEach(Topic.all) { topic in
-                            Text(L10n.tr("topic.\(topic.code)", lang)).tag(String?.some(topic.code))
-                        }
-                    }
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            AppIconView(.search, size: 15, color: Palette.muted, lineWidth: 2)
+            TextField(L10n.tr("library.search", lang), text: $query)
+                .font(.subheadline)
+                .foregroundStyle(Palette.ink)
+            if !query.isEmpty {
+                Button {
+                    query = ""
                 } label: {
-                    FilterMenuLabel(
-                        title: L10n.tr("library.topic", lang),
-                        value: topicFilter.map { L10n.tr("topic.\($0)", lang) }
-                    )
+                    AppIconView(.xmark, size: 11, color: Palette.muted, lineWidth: 2.4)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 12)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .glassSurface(cornerRadius: 16)
+        .padding(.horizontal, 20)
     }
 
     private var list: some View {
@@ -167,9 +194,7 @@ struct LibraryView: View {
                     .foregroundStyle(Palette.muted)
                 HStack(spacing: 5) {
                     if record.saved {
-                        Image(systemName: "bookmark.fill")
-                            .font(.caption2)
-                            .foregroundStyle(Palette.accent)
+                        AppIconView(.bookmark, size: 10, color: Palette.accent, lineWidth: 2.2, filled: true)
                     }
                     Text("×\(record.times)")
                         .font(.caption2.weight(.semibold).monospacedDigit())
@@ -183,9 +208,7 @@ struct LibraryView: View {
 
     private var emptyState: some View {
         VStack(spacing: 14) {
-            Image(systemName: "books.vertical")
-                .font(.system(size: 34, weight: .light))
-                .foregroundStyle(Palette.muted)
+            AppIconView(.book, size: 34, color: Palette.muted, lineWidth: 1.5)
             Text(L10n.tr("library.empty.title", lang))
                 .font(.headline)
                 .foregroundStyle(Palette.ink)
@@ -196,7 +219,7 @@ struct LibraryView: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .card()
+        .glassCard()
         .padding(20)
     }
 }
@@ -210,8 +233,7 @@ private struct FilterMenuLabel: View {
             Text(value.map { "\(title): \($0)" } ?? title)
                 .font(.subheadline.weight(.medium))
                 .lineLimit(1)
-            Image(systemName: "chevron.down")
-                .font(.caption2.weight(.semibold))
+            AppIconView(.chevronDown, size: 9, color: value == nil ? Palette.muted : Palette.accent, lineWidth: 2.6)
         }
         .padding(.horizontal, 13)
         .padding(.vertical, 8)

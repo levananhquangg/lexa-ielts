@@ -12,6 +12,7 @@ struct SettingsView: View {
             ScrollView {
                 VStack(spacing: 18) {
                     languageCard
+                    appearanceCard
                     bandCard
                     topicCard
                     widgetCard
@@ -22,7 +23,6 @@ struct SettingsView: View {
                 .padding(.bottom, 24)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .background(Palette.paper.ignoresSafeArea())
             .navigationTitle(L10n.tr("tab.settings", lang))
             .navigationBarTitleDisplayMode(.large)
             .confirmationDialog(
@@ -52,6 +52,34 @@ struct SettingsView: View {
                 value: state.settings.interfaceLanguage,
                 onChange: { value in state.update { $0.interfaceLanguage = value } }
             )
+        }
+    }
+
+    private var appearanceCard: some View {
+        settingsCard(L10n.tr("settings.appearance", lang)) {
+            FlowLayout(spacing: 8) {
+                SelectableChip(
+                    title: L10n.tr("appearance.system", lang),
+                    selected: state.settings.appearance == "system",
+                    systemIcon: .contrast
+                ) {
+                    state.update { $0.appearance = "system" }
+                }
+                SelectableChip(
+                    title: L10n.tr("appearance.light", lang),
+                    selected: state.settings.appearance == "light",
+                    systemIcon: .sun
+                ) {
+                    state.update { $0.appearance = "light" }
+                }
+                SelectableChip(
+                    title: L10n.tr("appearance.dark", lang),
+                    selected: state.settings.appearance == "dark",
+                    systemIcon: .moon
+                ) {
+                    state.update { $0.appearance = "dark" }
+                }
+            }
         }
     }
 
@@ -88,7 +116,7 @@ struct SettingsView: View {
                 SelectableChip(
                     title: L10n.tr("settings.allTopics", lang),
                     selected: state.settings.isAllTopics,
-                    systemImage: "circle.grid.2x2"
+                    systemIcon: .grid
                 ) {
                     state.update { $0.topics = [] }
                 }
@@ -114,14 +142,18 @@ struct SettingsView: View {
                 Haptics.tap()
                 WidgetCenter.shared.reloadAllTimelines()
             } label: {
-                Label(L10n.tr("settings.widget.refresh", lang), systemImage: "arrow.clockwise")
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Capsule().fill(Palette.hairline.opacity(0.4)))
-                    .foregroundStyle(Palette.ink)
+                Label {
+                    Text(L10n.tr("settings.widget.refresh", lang))
+                } icon: {
+                    AppIconView(.refresh, size: 14, color: Palette.ink, lineWidth: 2)
+                }
+                .font(.subheadline.weight(.semibold))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Capsule().fill(Palette.hairline.opacity(0.4)))
+                .foregroundStyle(Palette.ink)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressableStyle())
         }
     }
 
@@ -134,11 +166,15 @@ struct SettingsView: View {
             Button(role: .destructive) {
                 confirmReset = true
             } label: {
-                Label(L10n.tr("settings.reset", lang), systemImage: "trash")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.red)
+                Label {
+                    Text(L10n.tr("settings.reset", lang))
+                } icon: {
+                    AppIconView(.trash, size: 14, color: .red, lineWidth: 1.9)
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.red)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressableStyle())
             .padding(.top, 2)
         }
     }
@@ -153,7 +189,7 @@ struct SettingsView: View {
             content()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
+        .glassCard()
     }
 
     private func sectionCaption(_ text: String) -> some View {
@@ -166,7 +202,6 @@ struct SettingsView: View {
         state.update { settings in
             if settings.effectiveBands.contains(raw) {
                 if settings.bands.isEmpty {
-                    // Everything was selected; keep only the other bands.
                     let others = Set(Band.allCases.map(\.rawValue)).subtracting([raw])
                     settings.bands = others
                 } else if settings.bands.count > 1 {

@@ -20,12 +20,14 @@ struct WordCard: View {
             Text(word.w)
                 .font(.system(size: 42, weight: .semibold, design: .serif))
                 .foregroundStyle(Palette.ink)
-                .padding(.top, 14)
+                .padding(.top, 16)
+            Swash(width: 52)
+                .padding(.top, 4)
             if !word.ipa.isEmpty {
                 Text(word.ipa)
                     .font(.callout)
                     .foregroundStyle(Palette.muted)
-                    .padding(.top, 2)
+                    .padding(.top, 8)
             }
 
             if revealed {
@@ -39,7 +41,7 @@ struct WordCard: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
+        .glassCard()
     }
 
     // MARK: - Pieces
@@ -66,8 +68,7 @@ struct WordCard: View {
             state.progress.toggleSaved(word)
         } label: {
             HStack(spacing: 5) {
-                Image(systemName: saved ? "bookmark.fill" : "bookmark")
-                    .font(.caption)
+                AppIconView(.bookmark, size: 12, color: saved ? Palette.accent : Palette.muted, lineWidth: 2, filled: saved)
                 Text(L10n.tr(saved ? "action.saved" : "action.save", lang))
                     .font(.caption.weight(.semibold))
             }
@@ -78,26 +79,31 @@ struct WordCard: View {
             )
             .foregroundStyle(saved ? Palette.accent : Palette.muted)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableStyle())
         .accessibilityLabel(L10n.tr(saved ? "action.saved" : "action.save", lang))
     }
 
     private var revealButton: some View {
         Button {
             Haptics.tap()
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.82)) {
                 revealed = true
             }
         } label: {
-            Label(L10n.tr("today.reveal", lang), systemImage: "eye")
-                .font(.subheadline.weight(.semibold))
-                .padding(.horizontal, 18)
-                .padding(.vertical, 11)
-                .background(Capsule().fill(Palette.accent))
-                .foregroundStyle(Color.white)
+            Label {
+                Text(L10n.tr("today.reveal", lang))
+            } icon: {
+                AppIconView(.eye, size: 15, color: .white, lineWidth: 2)
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, 18)
+            .padding(.vertical, 11)
+            .background(Capsule().fill(Palette.accentGradient))
+            .foregroundStyle(Color.white)
+            .shadow(color: Palette.accent.opacity(0.35), radius: 10, y: 4)
         }
-        .buttonStyle(.plain)
-        .padding(.top, 20)
+        .buttonStyle(PressableStyle())
+        .padding(.top, 22)
     }
 
     private var meaningSection: some View {
@@ -105,7 +111,7 @@ struct WordCard: View {
             Rectangle()
                 .fill(Palette.hairline)
                 .frame(height: 1)
-                .padding(.top, 18)
+                .padding(.top, 20)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(L10n.tr("section.meaning", lang))
@@ -124,7 +130,7 @@ struct WordCard: View {
             if !word.ex.isEmpty {
                 HStack(alignment: .top, spacing: 10) {
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(Palette.accent.opacity(0.55))
+                        .fill(Palette.accentGradient)
                         .frame(width: 3)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(L10n.tr("section.example", lang))
@@ -141,13 +147,17 @@ struct WordCard: View {
             if !word.topics.isEmpty {
                 HStack(spacing: 6) {
                     ForEach(word.topics, id: \.self) { code in
-                        if let topic = Topic.byCode(code) {
-                            Label(L10n.tr("topic.\(topic.code)", lang), systemImage: topic.symbol)
-                                .font(.caption2)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Capsule().fill(Palette.hairline.opacity(0.35)))
-                                .foregroundStyle(Palette.muted)
+                        if let topic = Topic.byCode(code), let icon = Topic.icon(for: code) {
+                            Label {
+                                Text(L10n.tr("topic.\(topic.code)", lang))
+                            } icon: {
+                                AppIconView(icon, size: 11, color: Palette.muted, lineWidth: 2)
+                            }
+                            .font(.caption2)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Capsule().fill(Palette.hairline.opacity(0.35)))
+                            .foregroundStyle(Palette.muted)
                         }
                     }
                 }
@@ -164,12 +174,15 @@ struct WordCard: View {
                     .fill(Palette.hairline)
                     .frame(height: 1)
                 HStack {
-                    Label(
-                        L10n.tr("library.seenOn", lang)
-                            + " "
-                            + record.firstSeen.formatted(date: .numeric, time: .omitted),
-                        systemImage: "calendar"
-                    )
+                    Label {
+                        Text(
+                            L10n.tr("library.seenOn", lang)
+                                + " "
+                                + record.firstSeen.formatted(date: .numeric, time: .omitted)
+                        )
+                    } icon: {
+                        AppIconView(.calendar, size: 12, color: Palette.muted, lineWidth: 1.9)
+                    }
                     Spacer()
                     Text(L10n.tr("library.times", lang, record.times))
                 }

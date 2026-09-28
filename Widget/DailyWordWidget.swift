@@ -79,20 +79,26 @@ struct DailyWordWidgetView: View {
     private var rectangularView: some View {
         VStack(alignment: .leading, spacing: 3) {
             if let word = entry.word {
-                HStack(alignment: .top, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(word.w)
-                        .font(.system(size: 15, weight: .semibold, design: .serif))
+                        .font(.system(size: 16, weight: .semibold, design: .serif))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                     Spacer(minLength: 2)
                     SaveButton(entry: entry)
                 }
                 Text(word.gloss(in: entry.meaningLang))
-                    .font(.system(size: 11))
-                    .opacity(0.8)
-                    .lineLimit(1)
+                    .font(.system(size: 11.5, weight: .medium))
+                    .opacity(0.92)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                Text(secondaryText(for: word))
+                    .font(.system(size: 9.5))
+                    .opacity(0.6)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.75)
                 Spacer(minLength: 0)
-                Text("BAND \(Band(rawValue: word.band)?.label ?? "")")
+                Text(meta(for: word))
                     .font(.system(size: 9, weight: .semibold))
                     .opacity(0.55)
                     .lineLimit(1)
@@ -105,6 +111,18 @@ struct DailyWordWidgetView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .widgetURL(URL(string: "lexa://today"))
+    }
+
+    /// Primary meaning line is the gloss; the secondary line is the other
+    /// language so the widget always explains the word twice over.
+    private func secondaryText(for word: Word) -> String {
+        entry.meaningLang == "en" ? word.vi : word.def
+    }
+
+    private func meta(for word: Word) -> String {
+        let band = "BAND \(Band(rawValue: word.band)?.label ?? "")"
+        if word.ipa.isEmpty { return band }
+        return band + "  ·  " + word.ipa
     }
 
     private var inlineView: some View {
@@ -162,6 +180,7 @@ struct DailyWordWidgetView: View {
                     .font(.system(size: 11))
                     .foregroundStyle(Palette.muted)
                     .lineLimit(2)
+                    .minimumScaleFactor(0.8)
                 Spacer(minLength: 0)
                 BandChip(band: word.band)
             } else {

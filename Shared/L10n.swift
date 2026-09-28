@@ -61,6 +61,10 @@ enum L10n {
 
             "settings.meaning": "Ngôn ngữ nghĩa",
             "settings.interface": "Ngôn ngữ giao diện",
+            "settings.appearance": "Giao diện",
+            "appearance.system": "Hệ thống",
+            "appearance.light": "Sáng",
+            "appearance.dark": "Tối",
             "settings.band": "Band mục tiêu",
             "settings.topics": "Chủ đề",
             "settings.allTopics": "Tất cả chủ đề",
@@ -146,6 +150,10 @@ enum L10n {
 
             "settings.meaning": "Meaning language",
             "settings.interface": "Interface language",
+            "settings.appearance": "Appearance",
+            "appearance.system": "Auto",
+            "appearance.light": "Light",
+            "appearance.dark": "Dark",
             "settings.band": "Target band",
             "settings.topics": "Topics",
             "settings.allTopics": "All topics",

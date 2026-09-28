@@ -72,6 +72,28 @@ struct Topic: Identifiable, Hashable {
     static func byCode(_ code: String) -> Topic? {
         all.first { $0.code == code }
     }
+
+    static func icon(for code: String) -> AppIcon? {
+        switch code {
+        case "education": return .graduation
+        case "work": return .briefcase
+        case "technology": return .cpu
+        case "environment": return .leaf
+        case "health": return .heart
+        case "society": return .users
+        case "money": return .banknote
+        case "media": return .megaphone
+        case "travel": return .plane
+        case "culture": return .palette
+        case "science": return .atom
+        case "law": return .scales
+        case "government": return .columns
+        case "urban": return .skyline
+        case "food": return .food
+        case "global": return .globe
+        default: return nil
+        }
+    }
 }
 
 extension Word {

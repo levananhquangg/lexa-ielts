@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lexa — Design Preview</title>
+<style>
+  :root{
+    --paper:#F8F5EE; --ink:#221D13; --muted:#6F6757; --hairline:#E7E1D2;
+    --accent:#B4542E; --accent2:#D08A2E; --glass:rgba(255,255,255,.55);
+    --glass-stroke:rgba(255,255,255,.75); --blob-a:.42; --blob-b:.32;
+  }
+  :root[data-theme="dark"]{
+    --paper:#100F0B; --ink:#F1ECE1; --muted:#9C937F; --hairline:#322D22;
+    --accent:#DE7A4C; --accent2:#E8B05C; --glass:rgba(38,34,26,.5);
+    --glass-stroke:rgba(255,255,255,.09); --blob-a:.5; --blob-b:.4;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-font-smoothing:antialiased}
+  body{
+    font-family:-apple-system,"SF Pro Text","Segoe UI",system-ui,sans-serif;
+    background:#232019; min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; gap:26px; padding:40px 16px 60px; color:#EDE8DC;
+  }
+  .studio-note{font-size:12.5px; color:#9A927F; text-align:center; line-height:1.6}
+  .studio-note b{color:#D9D2C2; font-weight:600}
+  .controls{display:flex; gap:10px}
+  .ctl{
+    border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.06);
+    color:#EDE8DC; border-radius:999px; padding:8px 16px; font-size:13px;
+    cursor:pointer; transition:.2s;
+  }
+  .ctl:hover{background:rgba(255,255,255,.12)}
+
+  /* ------- phone frame ------- */
+  .phone{
+    width:390px; height:812px; border-radius:54px; position:relative; overflow:hidden;
+    background:var(--paper); color:var(--ink);
+    box-shadow:0 40px 90px rgba(0,0,0,.55), 0 0 0 10px #0c0b09, 0 0 0 12px #2c2a24;
+    transition:background .45s, color .45s;
+  }
+  .statusbar{
+    position:absolute; top:0; left:0; right:0; height:44px; z-index:6;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:0 30px; font-size:13.5px; font-weight:600; pointer-events:none;
+  }
+
+  /* ------- ambient background ------- */
+  .ambient{position:absolute; inset:0; overflow:hidden}
+  .blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:var(--blob-a)}
+  .b1{width:420px;height:420px;background:#C96A3F;left:-90px;top:-60px;animation:drift1 19s ease-in-out infinite alternate}
+  .b2{width:460px;height:460px;background:#4E8F70;right:-130px;top:40px;opacity:calc(var(--blob-b));animation:drift2 23s ease-in-out infinite alternate}
+  .b3{width:400px;height:400px;background:#D9A441;left:-40px;bottom:-120px;opacity:calc(var(--blob-b)*.8);animation:drift3 26s ease-in-out infinite alternate}
+  .b4{width:380px;height:380px;background:#5B7FB4;right:-110px;bottom:-90px;opacity:calc(var(--blob-b)*.75);animation:drift1 31s ease-in-out infinite alternate-reverse}
+  @keyframes drift1{to{transform:translate(70px,44px) scale(1.12)}}
+  @keyframes drift2{to{transform:translate(-64px,58px) scale(1.08)}}
+  @keyframes drift3{to{transform:translate(56px,-52px) scale(1.15)}}
+  .grain{
+    position:absolute; inset:0; opacity:.5; mix-blend-mode:overlay; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+  }
+  .vig{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),transparent 22%,transparent 78%,rgba(0,0,0,.07));pointer-events:none}
+
+  /* ------- glass ------- */
+  .glass{
+    background:var(--glass); backdrop-filter:blur(22px) saturate(1.5);
+    -webkit-backdrop-filter:blur(22px) saturate(1.5);
+    border:1px solid var(--glass-stroke); border-radius:24px;
+    box-shadow:0 12px 34px rgba(0,0,0,.10);
+    transition:background .45s, border-color .45s;
+  }
+
+  /* ------- screens ------- */
+  .screen{
+    position:absolute; inset:0; padding:60px 20px 110px; overflow-y:auto;
+    scrollbar-width:none; display:none;
+  }
+  .screen::-webkit-scrollbar{display:none}
+  .screen.on{display:block; animation:screenIn .45s cubic-bezier(.22,1,.36,1)}
+  @keyframes screenIn{from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none}}
+
+  .date{font-size:13.5px; color:var(--muted); margin-bottom:4px}
+  h1.big{font-family:"New York",Georgia,serif; font-size:29px; font-weight:600; letter-spacing:-.2px}
+  .card{padding:20px; margin-top:18px}
+  .chip{display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:600;
+    padding:3.5px 9px; border-radius:999px}
+  .chip.band5{color:#4C7FB0; background:rgba(76,127,176,.15); border:1px solid rgba(76,127,176,.4)}
+  .chip.band6{color:#3D8A67; background:rgba(61,138,103,.15); border:1px solid rgba(61,138,103,.4)}
+  .chip.band7{color:#C98A2D; background:rgba(201,138,45,.16); border:1px solid rgba(201,138,45,.45)}
+  .chip.pos{color:var(--muted); background:rgba(0,0,0,.06); border:1px solid transparent}
+  :root[data-theme="dark"] .chip.pos{background:rgba(255,255,255,.07)}
+  .chip svg{width:11px;height:11px}
+
+  .wordrow{display:flex; align-items:flex-start; gap:8px; margin-top:14px}
+  .word{font-family:"New York",Georgia,serif; font-size:41px; font-weight:600; line-height:1.05; letter-spacing:-.5px}
+  .swash{display:block; margin-top:5px}
+  .ipa{font-size:14px; color:var(--muted); margin-top:9px}
+  .save{
+    margin-left:auto; display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600;
+    padding:7px 12px; border-radius:999px; cursor:pointer; border:none;
+    color:var(--muted); background:rgba(0,0,0,.06); transition:.25s;
+  }
+  :root[data-theme="dark"] .save{background:rgba(255,255,255,.07)}
+  .save.on{color:var(--accent); background:color-mix(in srgb, var(--accent) 16%, transparent)}
+  .reveal{
+    margin-top:20px; display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:600;
+    padding:11px 19px; border-radius:999px; border:none; cursor:pointer; color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    box-shadow:0 8px 22px color-mix(in srgb, var(--accent) 38%, transparent);
+    transition:transform .2s;
+  }
+  .reveal:active{transform:scale(.96)}
+  .meaning{margin-top:20px; padding-top:18px; border-top:1px solid var(--hairline);
+    display:none; animation:reveal .55s cubic-bezier(.22,1,.36,1)}
+  .meaning.on{display:block}
+  @keyframes reveal{from{opacity:0; transform:translateY(8px); filter:blur(5px)} to{opacity:1; transform:none; filter:blur(0)}}
+  .seclabel{font-size:10.5px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--muted)}
+  .gloss{font-size:17.5px; font-weight:500; margin-top:6px}
+  .secondary{font-size:13.5px; color:var(--muted); margin-top:5px; line-height:1.45}
+  .example{display:flex; gap:10px; margin-top:16px}
+  .example .bar{width:3px; border-radius:2px; background:linear-gradient(var(--accent),var(--accent2)); flex:none}
+  .example p{font-size:13.5px; font-style:italic; opacity:.85; line-height:1.5}
+  .topics{display:flex; gap:6px; margin-top:16px}
+  .topics .chip{color:var(--muted); background:rgba(0,0,0,.055); border:none}
+  :root[data-theme="dark"] .topics .chip{background:rgba(255,255,255,.06)}
+
+  .morelabel{font-size:13.5px; font-weight:600; color:var(--muted); margin:26px 0 10px}
+  .sugg{display:flex; gap:12px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none}
+  .sugg::-webkit-scrollbar{display:none}
+  .scard{flex:none; width:150px; padding:14px; border-radius:18px}
+  .scard .w{font-family:"New York",Georgia,serif; font-size:16.5px; font-weight:600}
+  .scard .g{font-size:11.5px; color:var(--muted); margin:5px 0 9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+
+  /* ------- tab bar ------- */
+  .tabbar{
+    position:absolute; left:18px; right:18px; bottom:24px; z-index:5;
+    display:flex; padding:9px 6px; border-radius:26px;
+  }
+  .tab{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; cursor:pointer; color:var(--muted); padding:4px 0;
+    transition:color .25s;
+  }
+  .tab .lbl{font-size:9px; font-weight:600}
+  .tab.on{color:var(--accent)}
+  .tab.on svg{filter:drop-shadow(0 2px 7px color-mix(in srgb, var(--accent) 55%, transparent)); transform:scale(1.1)}
+  .tab svg{transition:.25s}
+
+  /* ------- explore ------- */
+  .tgrid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:18px}
+  .tcard{padding:14px; border-radius:18px; text-align:left}
+  .tcard .ic{width:40px;height:40px;border-radius:13px;background:color-mix(in srgb, var(--accent) 13%, transparent);
+    display:flex;align-items:center;justify-content:center;margin-bottom:11px}
+  .tcard .ic svg{width:20px;height:20px;color:var(--accent)}
+  .tcard .n{font-size:13.5px;font-weight:600}
+  .tcard .c{font-size:11px;color:var(--muted);margin-top:3px}
+
+  /* ------- stats ------- */
+  .bigstat{display:flex; align-items:baseline; gap:8px; margin-top:16px}
+  .bigstat .num{font-family:"New York",Georgia,serif; font-size:45px; font-weight:600}
+  .bigstat .cap{font-size:13px; color:var(--muted)}
+  .bars{display:flex; align-items:flex-end; gap:7px; height:170px; margin-top:18px}
+  .bar{flex:1; border-radius:4px 4px 2px 2px; background:linear-gradient(180deg,var(--accent2),var(--accent)); min-height:4px;
+    animation:grow .8s cubic-bezier(.22,1,.36,1) backwards}
+  @keyframes grow{from{height:0 !important}}
+  .barlbl{display:flex; gap:7px; margin-top:8px}
+  .barlbl span{flex:1; text-align:center; font-size:9px; color:var(--muted)}
+  .tiles{display:flex; gap:12px; margin-top:18px}
+  .tile{flex:1; border-radius:18px; padding:15px 10px; text-align:center}
+  .tile svg{width:15px;height:15px;color:var(--accent)}
+  .tile .v{font-family:"New York",Georgia,serif; font-size:23px; font-weight:600; margin-top:5px}
+  .tile .l{font-size:10.5px; color:var(--muted); margin-top:3px}
+
+  /* ------- widget mock ------- */
+  .lock{
+    width:390px; border-radius:44px; padding:26px 22px 30px; position:relative;
+    background:linear-gradient(200deg,#2E4A63,#1B2C3D 55%,#16222E); overflow:hidden;
+    box-shadow:0 40px 90px rgba(0,0,0,.55), 0 0 0 10px #0c0b09, 0 0 0 12px #2c2a24;
+  }
+  .lock .clock{font-family:"New York",Georgia,serif; font-size:64px; font-weight:600; color:#F4F1E8; text-align:center; line-height:1}
+  .lock .ld{color:#C7D2DC; text-align:center; font-size:13px; margin-top:6px}
+  .wrow{display:flex; gap:10px; margin-top:22px; align-items:stretch}
+  .wrect{
+    flex:1; border-radius:16px; background:rgba(10,14,18,.55); backdrop-filter:blur(8px);
+    border:1px solid rgba(255,255,255,.14); padding:12px 13px; color:#EDEAE0;
+    display:flex; flex-direction:column; min-height:108px;
+  }
+  .wrect .ww{font-family:"New York",Georgia,serif; font-size:16.5px; font-weight:600; display:flex}
+  .wrect .bm{margin-left:auto; cursor:pointer; opacity:.85}
+  .wrect .bm.on svg{fill:currentColor}
+  .wrect .wg{font-size:11.5px; font-weight:500; margin-top:3px; opacity:.94}
+  .wrect .wd{font-size:9.5px; opacity:.62; margin-top:3px; line-height:1.35}
+  .wrect .wm{font-size:8.6px; font-weight:600; letter-spacing:.4px; opacity:.55; margin-top:auto; padding-top:6px}
+  .wcirc{width:88px; border-radius:50%; background:rgba(10,14,18,.55); border:1px solid rgba(255,255,255,.14);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; color:#EDEAE0}
+  .wcirc .cl{font-family:"New York",Georgia,serif; font-size:27px; font-weight:600}
+  .wcirc .cb{font-size:10px; font-weight:600; opacity:.7}
+
+  /* ------- splash ------- */
+  .splash{
+    position:absolute; inset:0; z-index:20; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:10px; background:var(--paper);
+    transition:opacity .45s, transform .45s;
+  }
+  .splash.hide{opacity:0; transform:scale(1.05); pointer-events:none}
+  .splash .glow{position:absolute; width:340px; height:340px; border-radius:50%;
+    background:radial-gradient(circle, color-mix(in srgb, var(--accent) 17%, transparent), transparent 70%)}
+  .splash .mark{
+    font-family:"New York",Georgia,serif; font-size:126px; font-weight:600; line-height:1;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:markIn .65s cubic-bezier(.22,1,.36,1) backwards;
+  }
+  .splash .swashline{margin-top:-14px; animation:markIn .65s .1s cubic-bezier(.22,1,.36,1) backwards}
+  .splash .wm{font-family:"New York",Georgia,serif; font-size:29px; font-weight:600; animation:wordIn .5s .32s cubic-bezier(.22,1,.36,1) backwards}
+  .splash .tag{font-size:10.5px; font-weight:600; letter-spacing:5px; color:var(--muted); animation:wordIn .5s .42s cubic-bezier(.22,1,.36,1) backwards}
+  @keyframes markIn{from{opacity:0; transform:scale(.82); filter:blur(12px)} to{opacity:1; transform:none; filter:blur(0)}}
+  @keyframes wordIn{from{opacity:0; transform:translateY(13px)} to{opacity:1; transform:none}}
+</style>
+</head>
+<body>
+  <div class="studio-note"><b>Lexa — design preview v3</b><br>Interactive mock of the SwiftUI app: bấm reveal, đổi tab, đổi sáng/tối, replay splash. Widget mock nằm dưới.</div>
+  <div class="controls">
+    <button class="ctl" id="themeBtn">🌙 Tối / ☀ Sáng</button>
+    <button class="ctl" id="splashBtn">↺ Replay splash</button>
+  </div>
+
+  <div class="phone" id="phone">
+    <div class="ambient">
+      <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+      <div class="grain"></div><div class="vig"></div>
+    </div>
+    <div class="statusbar"><span>9:41</span><span>5G ▮▮▮</span></div>
+
+    <!-- TODAY -->
+    <div class="screen on" id="s-today">
+      <div class="date">Thứ ba, 30 tháng 9</div>
+      <h1 class="big">Từ của ngày</h1>
+
+      <div class="glass card">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="chip band5">5.0–5.5</span><span class="chip pos">adj</span>
+          <button class="save" id="saveBtn" onclick="toggleSave()"><span id="saveIc"></span><span id="saveTx">Lưu từ</span></button>
+        </div>
+        <div class="wordrow"><div>
+          <div class="word">considerable</div>
+          <span class="swash" id="swash1"></span>
+          <div class="ipa">/kənˈsidərəbl/</div>
+        </div></div>
+
+        <button class="reveal" id="revealBtn" onclick="reveal()">
+          <span id="eyeIc"></span> Xem nghĩa
+        </button>
+
+        <div class="meaning" id="meaning">
+          <div class="seclabel">Nghĩa</div>
+          <div class="gloss">đáng kể, lớn lao</div>
+          <div class="secondary">Large or relatively large in number, amount, extent, or degree</div>
+          <div class="example"><div class="bar"></div><p>The project requires considerable investment.</p></div>
+          <div class="topics"><span class="chip" id="tp"></span></div>
+        </div>
+      </div>
+
+      <div class="morelabel">Từ gợi ý hôm nay</div>
+      <div class="sugg" id="sugg"></div>
+    </div>
+
+    <!-- EXPLORE -->
+    <div class="screen" id="s-explore">
+      <h1 class="big" style="margin-bottom:14px">Khám phá</h1>
+      <div class="chip pos" style="padding:6px 12px;border-radius:9px;font-size:12.5px">Theo chủ đề &nbsp;·&nbsp; <b>Theo band</b></div>
+      <div class="tgrid" id="tgrid"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="screen" id="s-stats">
+      <h1 class="big" style="margin-bottom:14px">Thống kê</h1>
+      <div class="glass card" style="margin-top:0">
+        <div class="chip pos" style="padding:6px 12px;border-radius:9px;font-size:12.5px">Tuần &nbsp;·&nbsp; Tháng &nbsp;·&nbsp; Quý &nbsp;·&nbsp; Năm</div>
+        <div class="bigstat"><span class="num">7</span><span class="cap">từ mới</span></div>
+        <div class="bars" id="bars"></div>
+        <div class="barlbl" id="barlbl"></div>
+      </div>
+      <div class="tiles">
+        <div class="tile glass" id="t1"></div>
+        <div class="tile glass" id="t2"></div>
+        <div class="tile glass" id="t3"></div>
+      </div>
+    </div>
+
+    <!-- LIBRARY (mock) -->
+    <div class="screen" id="s-library">
+      <h1 class="big" style="margin-bottom:14px">Thư viện</h1>
+      <div class="glass card" style="margin-top:0;padding:16px">
+        <div class="seclabel">Tổng số từ</div>
+        <div style="font-family:'New York',Georgia,serif;font-size:40px;font-weight:600">7</div>
+      </div>
+      <div id="librows"></div>
+    </div>
+
+    <!-- SETTINGS (mock) -->
+    <div class="screen" id="s-settings">
+      <h1 class="big" style="margin-bottom:14px">Cài đặt</h1>
+      <div class="glass card" style="margin-top:0">
+        <div class="seclabel">Giao diện</div>
+        <div class="topics" style="margin-top:10px">
+          <span class="chip pos">◉ Hệ thống</span><span class="chip pos">Sáng</span><span class="chip pos">Tối</span>
+        </div>
+      </div>
+      <div class="glass card" style="margin-top:12px">
+        <div class="seclabel">Band mục tiêu</div>
+        <div class="topics" style="margin-top:10px">
+          <span class="chip band5">5.0–5.5</span><span class="chip band6">6.0–6.5</span>
+          <span class="chip band7">7.0–7.5</span><span class="chip pos">8.0–9.0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar glass" id="tabbar"></div>
+
+    <div class="splash" id="splash">
+      <div class="glow"></div>
+      <div class="mark">L</div>
+      <span class="swashline" id="swashS"></span>
+      <div class="wm">Lexa</div>
+      <div class="tag">IELTS&nbsp;&nbsp;VOCABULARY</div>
+    </div>
+  </div>
+
+  <!-- lock screen widget mock -->
+  <div class="lock">
+    <div class="clock">9:41</div>
+    <div class="ld">Thứ ba, 30 tháng 9</div>
+    <div class="wrow">
+      <div class="wrect">
+        <div class="ww">considerable <span class="bm on" id="wbm"></span></div>
+        <div class="wg">đáng kể, lớn lao</div>
+        <div class="wd">Large or relatively large in number, amount, extent or degree</div>
+        <div class="wm">BAND 5.0–5.5 &nbsp;·&nbsp; /kənˈsidərəbl/</div>
+      </div>
+      <div class="wcirc"><div class="cl">C</div><div class="cb">5+</div></div>
+    </div>
+  </div>
+
+<script src="icons.js"></script>
+<script>
+  // ---- icon renderer: same path language as the Swift app (O → ellipse) ----
+  function iconSVG(name, size, color, lw, filled){
+    const d = ICONS[name]; if(!d) return "";
+    let paths = "", ellipses = "";
+    const re = /([MLCQAZO])([^MLCQAZO]*)/g; let m;
+    while((m = re.exec(d))){
+      const cmd = m[1], nums = m[2].trim().length ? m[2].trim().split(/[\s,]+/).map(Number) : [];
+      if(cmd === "O"){
+        const [cx,cy,rx,ry,rot] = nums;
+        ellipses += `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rot||0} ${cx} ${cy})"/>`;
+      } else {
+        paths += cmd + " " + nums.join(" ") + " ";
+      }
+    }
+    const paint = filled
+      ? `fill="${color}" stroke="none"`
+      : `fill="none" stroke="${color}" stroke-width="${lw}" stroke-linecap="round" stroke-linejoin="round"`;
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="display:block">${paths.trim() ? `<path d="${paths.trim()}" ${paint}/>` : ""}${ellipses.replace(/\/>/g, `fill="none" stroke="${color}" stroke-width="${lw}"/>`)}</svg>`;
+  }
+  const ink = () => getComputedStyle(document.documentElement).getPropertyValue("--ink").trim();
+  const muted = () => getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+  const accent = () => getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+
+  // ---- theme ----
+  const themeBtn = document.getElementById("themeBtn");
+  themeBtn.onclick = () => {
+    const r = document.documentElement;
+    r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light";
+    renderAll();
+  };
+
+  // ---- splash ----
+  const splash = document.getElementById("splash");
+  splash.classList.add("hide"); setTimeout(()=>splash.classList.remove("hide"), 60);
+  setTimeout(()=>splash.classList.add("hide"), 2000); // auto-play once on load
+  document.getElementById("splashBtn").onclick = () => {
+    splash.classList.remove("hide");
+    splash.querySelectorAll(".mark,.wm,.tag,.swashline").forEach(el=>{
+      el.style.animation="none"; void el.offsetWidth; el.style.animation="";
+    });
+    setTimeout(()=>splash.classList.add("hide"), 1700);
+  };
+  splash.onclick = () => splash.classList.add("hide");
+
+  // ---- tabs ----
+  const tabs = [
+    ["today","sun","Hôm nay"],["explore","compass","Khám phá"],["library","book","Thư viện"],
+    ["stats","chart","Thống kê"],["settings","sliders","Cài đặt"]
+  ];
+  const tabbar = document.getElementById("tabbar");
+  tabbar.innerHTML = tabs.map(([id,ic,lbl]) =>
+    `<button class="tab ${id==="today"?"on":""}" data-s="${id}">${iconSVG(ic,21,muted(),1.6)}<span class="lbl">${lbl}</span></button>`).join("");
+  tabbar.querySelectorAll(".tab").forEach(btn => btn.onclick = () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+    btn.classList.add("on");
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
+    document.getElementById("s-" + btn.dataset.s).classList.add("on");
+    renderAll();
+  });
+
+  // ---- today ----
+  let saved = false;
+  const word = {w:"considerable", vi:"đáng kể, lớn lao",
+    def:"Large or relatively large in number, amount, extent, or degree",
+    ipa:"/kənˈsidərəbl/", band:"5.0–5.5", cls:"band5",
+    ex:"The project requires considerable investment.", topic:["education","money"]};
+  function toggleSave(){
+    saved = !saved;
+    const b = document.getElementById("saveBtn");
+    b.classList.toggle("on", saved);
+    document.getElementById("saveIc").innerHTML = iconSVG("bookmark",12,saved?accent():muted(),2.1,saved);
+    document.getElementById("saveTx").textContent = saved ? "Đã lưu" : "Lưu từ";
+    document.getElementById("wbm").innerHTML = iconSVG("bookmark",13,"#EDEAE0",2,saved);
+  }
+  function reveal(){
+    document.getElementById("meaning").classList.add("on");
+    document.getElementById("revealBtn").style.display = "none";
+  }
+  function swashSVG(width){
+    return `<svg width="${width}" height="9" viewBox="0 0 42 9"><path d="M2 7 C12 1.6 30 1.6 42 6" fill="none" stroke="${accent()}" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+  }
+  document.getElementById("swash1").innerHTML = swashSVG(46);
+  document.getElementById("swashS").innerHTML = swashSVG(58);
+  document.getElementById("saveIc").innerHTML = iconSVG("bookmark",12,muted(),2.1);
+  document.getElementById("wbm").innerHTML = iconSVG("bookmark",13,"#EDEAE0",2,false);
+  document.getElementById("eyeIc").innerHTML = iconSVG("eye",15,"#fff",2);
+  document.getElementById("tp").innerHTML = iconSVG("graduation",11,muted(),2) + " Giáo dục · " + iconSVG("banknote",11,muted(),2) + " Kinh tế";
+  const sugg = [
+    ["significant","đáng kể, quan trọng","5.0–5.5","band5"],
+    ["substantial","đáng kể, lớn","6.0–6.5","band6"],
+    ["monopoly","sự độc quyền","7.0–7.5","band7"],
+    ["arise","nảy sinh, phát sinh","5.0–5.5","band5"],
+  ];
+  document.getElementById("sugg").innerHTML = sugg.map(([w,g,b,cls]) =>
+    `<div class="scard glass"><div class="w">${w}</div><div class="g">${g}</div><span class="chip ${cls}">${b}</span></div>`).join("");
+
+  // ---- explore ----
+  const topics = [
+    ["graduation","Giáo dục",104],["briefcase","Công việc",66],["cpu","Công nghệ",23],["leaf","Môi trường",50],
+    ["heart","Sức khỏe",45],["users","Xã hội",42],["banknote","Kinh tế",80],["megaphone","Truyền thông",18],
+    ["plane","Du lịch",18],["palette","Văn hóa",27],["atom","Khoa học",29],["scales","Pháp lý",47],
+    ["columns","Chính phủ",32],["skyline","Đô thị",19],["food","Ăn uống",13],["globe","Toàn cầu",29],
+  ];
+  document.getElementById("tgrid").innerHTML = topics.map(([ic,n,c]) =>
+    `<div class="tcard glass"><div class="ic">${iconSVG(ic,20,accent(),1.8)}</div><div class="n">${n}</div><div class="c">${c} từ</div></div>`).join("");
+
+  // ---- stats ----
+  const counts = [1,0,2,3,0,1,0], labels = ["24/9","25","26","27","28","29","30"];
+  const max = Math.max(...counts, 1);
+  document.getElementById("bars").innerHTML = counts.map((c,i) =>
+    `<div class="bar" style="height:${8 + c/max*150}px; animation-delay:${i*0.05}s"></div>`).join("");
+  document.getElementById("barlbl").innerHTML = labels.map(l => `<span>${l}</span>`).join("");
+  const tiles = [["book","7","Tổng cộng"],["bookmark","3","Đã lưu"],["sun","2","Tuần"]];
+  ["t1","t2","t3"].forEach((id,i) => {
+    document.getElementById(id).innerHTML = iconSVG(tiles[i][0],15,accent(),1.9) +
+      `<div class="v">${tiles[i][1]}</div><div class="l">${tiles[i][2]}</div>`;
+  });
+
+  // ---- library rows ----
+  const lib = [["considerable","5.0–5.5","band5","30/09/26","×2"],["significant","5.0–5.5","band5","29/09/26","×3"],
+    ["monopoly","7.0–7.5","band7","29/09/26","×1"],["substantial","6.0–6.5","band6","28/09/26","×1"]];
+  document.getElementById("librows").innerHTML = lib.map(([w,b,cls,dt,tm]) =>
+    `<div class="glass" style="margin-top:10px;padding:14px 18px;display:flex;align-items:center">
+      <div><div style="font-family:'New York',Georgia,serif;font-size:16.5px;font-weight:600">${w}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Kinh tế</div></div>
+      <div style="margin-left:auto;text-align:right"><div style="font-size:10px;color:var(--muted)">${dt}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${tm}</div></div>
+      <span class="chip ${cls}" style="margin-left:12px">${b}</span></div>`).join("");
+
+  // ---- re-render theme-dependent icons ----
+  function renderAll(){
+    tabbar.querySelectorAll(".tab").forEach((btn,i) => {
+      const on = btn.classList.contains("on");
+      btn.querySelector("svg").outerHTML = iconSVG(tabs[i][1],21,on?accent():muted(),on?2:1.6);
+    });
+    document.getElementById("saveIc").innerHTML = iconSVG("bookmark",12,saved?accent():muted(),2.1,saved);
+  }
+  renderAll();
+</script>
+</body>
+</html>

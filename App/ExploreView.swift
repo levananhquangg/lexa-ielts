@@ -30,7 +30,6 @@ struct ExploreView: View {
                 .padding(.bottom, 24)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .background(Palette.paper.ignoresSafeArea())
             .navigationTitle(L10n.tr("tab.explore", lang))
             .navigationBarTitleDisplayMode(.large)
         }
@@ -52,30 +51,27 @@ struct ExploreView: View {
                         topicCode: topic.code
                     )
                 } label: {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Image(systemName: topic.symbol)
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundStyle(Palette.accent)
-                        Text(L10n.tr("topic.\(topic.code)", lang))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Palette.ink)
-                        Text(String(format: L10n.tr("explore.count", lang), topicCount(topic.code)))
-                            .font(.caption)
-                            .foregroundStyle(Palette.muted)
+                    VStack(alignment: .leading, spacing: 12) {
+                        AppIconView(Topic.icon(for: topic.code) ?? .grid, size: 21, color: Palette.accent, lineWidth: 1.8)
+                            .frame(width: 42, height: 42)
+                            .background(
+                                RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                    .fill(Palette.accent.opacity(0.13))
+                            )
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(L10n.tr("topic.\(topic.code)", lang))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Palette.ink)
+                            Text(String(format: L10n.tr("explore.count", lang), topicCount(topic.code)))
+                                .font(.caption)
+                                .foregroundStyle(Palette.muted)
+                        }
                     }
                     .padding(14)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(Palette.card)
-                            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .strokeBorder(Palette.hairline, lineWidth: 1)
-                    )
+                    .glassSurface(cornerRadius: 18)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableStyle())
             }
         }
         .padding(.horizontal, 20)
@@ -101,22 +97,12 @@ struct ExploreView: View {
                         Text(String(format: L10n.tr("explore.count", lang), bandCount(band.rawValue)))
                             .font(.subheadline)
                             .foregroundStyle(Palette.muted)
-                        Image(systemName: "chevron.right")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(Palette.muted.opacity(0.6))
+                        AppIconView(.chevronRight, size: 11, color: Palette.muted.opacity(0.7), lineWidth: 2.2)
                     }
                     .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .fill(Palette.card)
-                            .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
-                            .strokeBorder(Palette.hairline, lineWidth: 1)
-                    )
+                    .glassSurface(cornerRadius: 18)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PressableStyle())
             }
         }
         .padding(.horizontal, 20)
@@ -182,7 +168,6 @@ struct WordListScreen: View {
             .padding(.top, 6)
             .padding(.bottom, 24)
         }
-        .background(Palette.paper.ignoresSafeArea())
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $selected) { word in

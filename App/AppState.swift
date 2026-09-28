@@ -9,11 +9,21 @@ final class AppState {
     let progress: ProgressStore
     private(set) var settings: StudySettings
     var selectedTab: AppTab = .today
+    var splashDone = false
 
     init() {
         self.repository = VocabRepository()
         self.settings = StudySettings.load()
         self.progress = ProgressStore()
+    }
+
+    /// nil = follow the system appearance.
+    var appearanceScheme: ColorScheme? {
+        switch settings.appearance {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
     }
 
     /// Words that match the current band/topic selection.

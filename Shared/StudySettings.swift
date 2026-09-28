@@ -7,10 +7,29 @@ struct StudySettings: Codable, Equatable {
     var topics: Set<String> = []
     var meaningLanguage: String = StudySettings.defaultLanguage()
     var interfaceLanguage: String = StudySettings.defaultLanguage()
+    /// "system" | "light" | "dark"
+    var appearance: String = "system"
+
+    enum CodingKeys: String, CodingKey {
+        case bands, topics, meaningLanguage, interfaceLanguage, appearance
+    }
+
+    /// Tolerant decoder: settings saved by older app versions miss the newer
+    /// keys and must not fail to decode.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        bands = try c.decodeIfPresent(Set<Int>.self, forKey: .bands) ?? []
+        topics = try c.decodeIfPresent(Set<String>.self, forKey: .topics) ?? []
+        meaningLanguage = try c.decodeIfPresent(String.self, forKey: .meaningLanguage) ?? StudySettings.defaultLanguage()
+        interfaceLanguage = try c.decodeIfPresent(String.self, forKey: .interfaceLanguage) ?? StudySettings.defaultLanguage()
+        appearance = try c.decodeIfPresent(String.self, forKey: .appearance) ?? "system"
+    }
+
+    init() {}
 
     static let storageKey = "study.settings.v1"
 
-    /// Empty sets mean "everything". These helpers normalise access.
+    /// Empty sets mean "everything".
     var effectiveBands: Set<Int> {
         bands.isEmpty ? Set(Band.allCases.map(\.rawValue)) : bands
     }

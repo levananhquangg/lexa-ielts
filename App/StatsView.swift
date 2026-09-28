@@ -23,7 +23,6 @@ struct StatsView: View {
                 .padding(.bottom, 24)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .background(Palette.paper.ignoresSafeArea())
             .navigationTitle(L10n.tr("tab.stats", lang))
             .navigationBarTitleDisplayMode(.large)
         }
@@ -46,15 +45,18 @@ struct StatsView: View {
                     .font(.system(size: 46, weight: .semibold, design: .serif))
                     .foregroundStyle(Palette.ink)
                     .monospacedDigit()
+                    .contentTransition(.numericText())
                 Text(L10n.tr("stats.newWords", lang))
                     .font(.subheadline)
                     .foregroundStyle(Palette.muted)
             }
+            .animation(.spring(response: 0.4, dampingFraction: 0.85), value: period)
 
             chart
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .card()
+        .glassCard()
+        .animation(.spring(response: 0.45, dampingFraction: 0.85), value: period)
     }
 
     private var buckets: [StatsBucket] {
@@ -90,7 +92,7 @@ struct StatsView: View {
                 x: .value("date", bucket.date, unit: chartUnit),
                 y: .value("count", bucket.count)
             )
-            .foregroundStyle(Palette.accent.gradient)
+            .foregroundStyle(Palette.accentGradient)
             .cornerRadius(3)
         }
         .chartXAxis {
@@ -112,28 +114,27 @@ struct StatsView: View {
     private var tiles: some View {
         HStack(spacing: 12) {
             StatTile(
-                value: "\(state.progress.records.count)",
+                value: state.progress.records.count,
                 label: L10n.tr("stats.allTime", lang),
-                icon: "square.stack.3d.up"
+                icon: .book
             )
             StatTile(
-                value: "\(state.progress.savedCount)",
+                value: state.progress.savedCount,
                 label: L10n.tr("stats.savedWords", lang),
-                icon: "bookmark"
+                icon: .bookmark
             )
             StatTile(
-                value: "\(state.progress.totalInPeriod(.week))",
+                value: state.progress.totalInPeriod(.week),
                 label: L10n.tr("stats.week", lang),
-                icon: "calendar"
+                icon: .sun
             )
         }
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: state.progress.records.count)
     }
 
     private var emptyState: some View {
         VStack(spacing: 14) {
-            Image(systemName: "chart.bar")
-                .font(.system(size: 34, weight: .light))
-                .foregroundStyle(Palette.muted)
+            AppIconView(.chart, size: 34, color: Palette.muted, lineWidth: 1.5)
             Text(L10n.tr("stats.empty", lang))
                 .font(.subheadline)
                 .foregroundStyle(Palette.muted)
@@ -141,23 +142,22 @@ struct StatsView: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .card()
+        .glassCard()
     }
 }
 
 private struct StatTile: View {
-    let value: String
+    let value: Int
     let label: String
-    let icon: String
+    let icon: AppIcon
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.callout)
-                .foregroundStyle(Palette.accent)
-            Text(value)
+            AppIconView(icon, size: 15, color: Palette.accent, lineWidth: 1.9)
+            Text("\(value)")
                 .font(.system(size: 24, weight: .semibold, design: .serif))
                 .monospacedDigit()
+                .contentTransition(.numericText())
                 .foregroundStyle(Palette.ink)
             Text(label)
                 .font(.caption)
@@ -166,14 +166,7 @@ private struct StatTile: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Palette.card)
-                .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(Palette.hairline, lineWidth: 1)
-        )
+        .glassSurface(cornerRadius: 18)
+        .animation(.spring(response: 0.4, dampingFraction: 0.85), value: value)
     }
 }

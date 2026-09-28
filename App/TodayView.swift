@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppState.self) private var state
     @State private var revealed = false
+    @State private var appeared = false
 
     private var lang: String { state.settings.interfaceLanguage }
     private var meaningLang: String { state.settings.meaningLanguage }
@@ -14,8 +15,12 @@ struct TodayView: View {
                     header
                     if let word = state.todayWord {
                         WordCard(word: word, revealed: $revealed, lang: lang, meaningLang: meaningLang)
+                            .offset(y: appeared ? 0 : 30)
+                            .opacity(appeared ? 1 : 0)
                         if state.daySet.count > 1 {
                             moreSection
+                                .offset(y: appeared ? 0 : 34)
+                                .opacity(appeared ? 1 : 0)
                         }
                     } else {
                         emptyState
@@ -26,7 +31,6 @@ struct TodayView: View {
                 .padding(.bottom, 28)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .background(Palette.paper.ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text("Lexa")
@@ -34,6 +38,19 @@ struct TodayView: View {
                         .foregroundStyle(Palette.ink)
                 }
             }
+        }
+        .onChange(of: state.splashDone) { _, done in
+            if done { animateIn() }
+        }
+        .task {
+            if state.splashDone { animateIn() }
+        }
+    }
+
+    private func animateIn() {
+        guard !appeared else { return }
+        withAnimation(.spring(response: 0.55, dampingFraction: 0.85).delay(0.05)) {
+            appeared = true
         }
     }
 
@@ -54,9 +71,10 @@ struct TodayView: View {
             Text(L10n.tr("today.more", lang))
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Palette.muted)
+                .animation(nil, value: appeared)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(Array(state.daySet.dropFirst().enumerated()), id: \.element.id) { _, word in
+                    ForEach(Array(state.daySet.dropFirst().enumerated()), id: \.element.id) { index, word in
                         NavigationLink {
                             WordDetailScreen(word: word)
                         } label: {
@@ -72,17 +90,12 @@ struct TodayView: View {
                             }
                             .padding(14)
                             .frame(width: 152, alignment: .leading)
-                            .background(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .fill(Palette.card)
-                                    .shadow(color: .black.opacity(0.04), radius: 8, y: 4)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                    .strokeBorder(Palette.hairline, lineWidth: 1)
-                            )
+                            .glassSurface(cornerRadius: 18)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PressableStyle())
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : 18)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85).delay(0.12 + Double(index) * 0.06), value: appeared)
                     }
                 }
             }
@@ -91,9 +104,7 @@ struct TodayView: View {
 
     private var emptyState: some View {
         VStack(spacing: 14) {
-            Image(systemName: "line.3.horizontal.decrease.circle")
-                .font(.system(size: 34, weight: .light))
-                .foregroundStyle(Palette.muted)
+            AppIconView(.compass, size: 34, color: Palette.muted, lineWidth: 1.5)
             Text(L10n.tr("today.empty.title", lang))
                 .font(.headline)
                 .foregroundStyle(Palette.ink)
@@ -108,14 +119,14 @@ struct TodayView: View {
                     .font(.subheadline.weight(.semibold))
                     .padding(.horizontal, 18)
                     .padding(.vertical, 10)
-                    .background(Capsule().fill(Palette.accent))
+                    .background(Capsule().fill(Palette.accentGradient))
                     .foregroundStyle(Color.white)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(PressableStyle())
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .card()
+        .glassCard()
     }
 }
 
@@ -136,7 +147,6 @@ struct WordDetailScreen: View {
             )
             .padding(20)
         }
-        .background(Palette.paper.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .task { state.progress.recordSeen(word) }
     }
@@ -161,16 +171,13 @@ struct WordDetailSheet: View {
                 )
                 .padding(20)
             }
-            .background(Palette.paper.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         dismiss()
                     } label: {
-                        Image(systemName: "xmark")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(Palette.muted)
+                        AppIconView(.xmark, size: 14, color: Palette.muted, lineWidth: 2.2)
                     }
                 }
             }
