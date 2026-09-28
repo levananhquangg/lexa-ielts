@@ -71,16 +71,15 @@ struct StatsView: View {
 
     private var strideValues: AxisMarkValues {
         switch period {
-        case .week: return .stride(by: DateComponents(day: 1))
-        case .month: return .stride(by: DateComponents(day: 7))
-        case .quarter: return .stride(by: DateComponents(day: 21))
-        case .year: return .stride(by: DateComponents(month: 1))
+        case .week: return .stride(by: .day)
+        case .month: return .stride(by: .weekOfYear)
+        case .quarter, .year: return .stride(by: .month)
         }
     }
 
     private var axisFormat: Date.FormatStyle {
         switch period {
-        case .year: return .dateTime.month(.abbreviated)
+        case .quarter, .year: return .dateTime.month(.abbreviated)
         default: return .dateTime.day().month(.abbreviated)
         }
     }
