@@ -37,6 +37,10 @@ extension Color {
             UIColor(hex: traits.userInterfaceStyle == .dark ? dark : light)
         })
     }
+
+    init(hex: String) {
+        self.init(uiColor: UIColor(hex: hex))
+    }
 }
 
 extension UIColor {
