@@ -1,0 +1,186 @@
+import Foundation
+
+/// Minimal string catalogue for the two interface/meaning languages.
+enum L10n {
+    static func tr(_ key: String, _ lang: String) -> String {
+        let table = tables[lang] ?? tables["vi"]!
+        return table[key] ?? tables["en"]?[key] ?? key
+    }
+
+    static func tr(_ key: String, _ lang: String, _ argument: CVarArg) -> String {
+        String(format: tr(key, lang), argument)
+    }
+
+    static let tables: [String: [String: String]] = [
+        "vi": [
+            "tab.today": "Hôm nay",
+            "tab.explore": "Khám phá",
+            "tab.library": "Thư viện",
+            "tab.stats": "Thống kê",
+            "tab.settings": "Cài đặt",
+
+            "today.header": "Từ của ngày",
+            "today.reveal": "Xem nghĩa",
+            "today.more": "Từ gợi ý hôm nay",
+            "today.empty.title": "Không có từ nào khớp bộ lọc",
+            "today.empty.hint": "Nới rộng band hoặc chủ đề trong Cài đặt để nhận từ mỗi ngày.",
+
+            "section.meaning": "Nghĩa",
+            "section.example": "Ví dụ",
+            "section.topics": "Chủ đề",
+
+            "action.save": "Lưu từ",
+            "action.saved": "Đã lưu",
+            "action.close": "Đóng",
+
+            "explore.topics": "Theo chủ đề",
+            "explore.bands": "Theo band",
+            "explore.count": "%d từ",
+
+            "library.title": "Thư viện",
+            "library.total": "Tổng số từ",
+            "library.search": "Tìm từ",
+            "library.all": "Tất cả",
+            "library.saved": "Đã lưu",
+            "library.band": "Band",
+            "library.topic": "Chủ đề",
+            "library.seenOn": "Xuất hiện",
+            "library.times": "%d lần",
+            "library.empty.title": "Thư viện đang trống",
+            "library.empty.hint": "Từ bạn xem hoặc lưu sẽ xuất hiện ở đây cùng ngày đầu tiên.",
+
+            "stats.week": "Tuần",
+            "stats.month": "Tháng",
+            "stats.quarter": "Quý",
+            "stats.year": "Năm",
+            "stats.newWords": "từ mới",
+            "stats.allTime": "Tổng cộng",
+            "stats.savedWords": "Đã lưu",
+            "stats.chartTitle": "Từ mới theo thời gian",
+            "stats.empty": "Học từ đầu tiên để bắt đầu thấy thống kê.",
+
+            "settings.meaning": "Ngôn ngữ nghĩa",
+            "settings.interface": "Ngôn ngữ giao diện",
+            "settings.band": "Band mục tiêu",
+            "settings.topics": "Chủ đề",
+            "settings.allTopics": "Tất cả chủ đề",
+            "settings.widget": "Widget màn hình khóa",
+            "settings.widget.hint": "Nhấn giữ màn hình khóa → Tùy chỉnh → Màn hình khóa → thêm widget Lexa. Từ mới tự đổi mỗi ngày.",
+            "settings.widget.refresh": "Làm mới widget",
+            "settings.data": "Dữ liệu",
+            "settings.data.credit": "%d từ lõi IELTS · IPA và định nghĩa tiếng Anh từ ECDICT (nguồn mở).",
+            "settings.reset": "Xóa toàn bộ tiến trình",
+            "settings.reset.confirm": "Toàn bộ lịch sử học sẽ bị xóa vĩnh viễn.",
+            "settings.reset.button": "Xóa vĩnh viễn",
+            "common.cancel": "Hủy",
+            "common.language.vi": "Tiếng Việt",
+            "common.language.en": "English",
+
+            "topic.education": "Giáo dục",
+            "topic.work": "Công việc",
+            "topic.technology": "Công nghệ",
+            "topic.environment": "Môi trường",
+            "topic.health": "Sức khỏe",
+            "topic.society": "Xã hội",
+            "topic.money": "Kinh tế",
+            "topic.media": "Truyền thông",
+            "topic.travel": "Du lịch",
+            "topic.culture": "Văn hóa",
+            "topic.science": "Khoa học",
+            "topic.law": "Pháp lý",
+            "topic.government": "Chính phủ",
+            "topic.urban": "Đô thị",
+            "topic.food": "Ăn uống",
+            "topic.global": "Toàn cầu",
+
+            "widget.displayName": "Từ của ngày",
+            "widget.description": "Một từ IELTS mỗi ngày, theo band và chủ đề bạn chọn.",
+            "widget.noWord": "Mở Lexa để chọn band và chủ đề.",
+        ],
+        "en": [
+            "tab.today": "Today",
+            "tab.explore": "Explore",
+            "tab.library": "Library",
+            "tab.stats": "Stats",
+            "tab.settings": "Settings",
+
+            "today.header": "Word of the day",
+            "today.reveal": "Show meaning",
+            "today.more": "More for today",
+            "today.empty.title": "No words match your filters",
+            "today.empty.hint": "Widen the band range or topics in Settings to get daily words.",
+
+            "section.meaning": "Meaning",
+            "section.example": "Example",
+            "section.topics": "Topics",
+
+            "action.save": "Save",
+            "action.saved": "Saved",
+            "action.close": "Close",
+
+            "explore.topics": "By topic",
+            "explore.bands": "By band",
+            "explore.count": "%d words",
+
+            "library.title": "Library",
+            "library.total": "Total words",
+            "library.search": "Search words",
+            "library.all": "All",
+            "library.saved": "Saved",
+            "library.band": "Band",
+            "library.topic": "Topic",
+            "library.seenOn": "First seen",
+            "library.times": "%d times",
+            "library.empty.title": "Your library is empty",
+            "library.empty.hint": "Words you view or save will appear here with the date you first saw them.",
+
+            "stats.week": "Week",
+            "stats.month": "Month",
+            "stats.quarter": "Quarter",
+            "stats.year": "Year",
+            "stats.newWords": "new words",
+            "stats.allTime": "All time",
+            "stats.savedWords": "Saved",
+            "stats.chartTitle": "New words over time",
+            "stats.empty": "Learn your first word to start seeing stats.",
+
+            "settings.meaning": "Meaning language",
+            "settings.interface": "Interface language",
+            "settings.band": "Target band",
+            "settings.topics": "Topics",
+            "settings.allTopics": "All topics",
+            "settings.widget": "Lock screen widget",
+            "settings.widget.hint": "Touch and hold the Lock Screen → Customise → Lock Screen → add the Lexa widget. The word updates itself every day.",
+            "settings.widget.refresh": "Refresh widget",
+            "settings.data": "Data",
+            "settings.data.credit": "%d core IELTS words · IPA and English definitions from ECDICT (open source).",
+            "settings.reset": "Erase all progress",
+            "settings.reset.confirm": "Your entire learning history will be permanently erased.",
+            "settings.reset.button": "Erase permanently",
+            "common.cancel": "Cancel",
+            "common.language.vi": "Tiếng Việt",
+            "common.language.en": "English",
+
+            "topic.education": "Education",
+            "topic.work": "Work",
+            "topic.technology": "Technology",
+            "topic.environment": "Environment",
+            "topic.health": "Health",
+            "topic.society": "Society",
+            "topic.money": "Economy",
+            "topic.media": "Media",
+            "topic.travel": "Travel",
+            "topic.culture": "Culture",
+            "topic.science": "Science",
+            "topic.law": "Law",
+            "topic.government": "Government",
+            "topic.urban": "Cities",
+            "topic.food": "Food",
+            "topic.global": "Global",
+
+            "widget.displayName": "Word of the day",
+            "widget.description": "One IELTS word a day, matched to your band and topics.",
+            "widget.noWord": "Open Lexa to pick a band and topics.",
+        ],
+    ]
+}

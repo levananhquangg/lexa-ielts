@@ -1,0 +1,14 @@
+# XcodeGen
+Lexa.xcodeproj/
+
+# macOS
+.DS_Store
+
+# Tools working files (large)
+tools/_raw/
+
+# Swift build artifacts
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/

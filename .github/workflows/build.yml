@@ -1,0 +1,49 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen
+
+      - name: Build (unsigned, device)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project Lexa.xcodeproj \
+            -scheme Lexa \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | tee build.log | grep -E "(error|warning: .*Lexa|BUILD)" || true
+          grep -q "BUILD SUCCEEDED" build.log
+
+      - name: Package unsigned IPA
+        run: |
+          mkdir -p Payload
+          cp -R "build/Build/Products/Release-iphoneos/Lexa.app" Payload/
+          zip -qr Lexa-unsigned.ipa Payload
+          ls -lh Lexa-unsigned.ipa
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lexa-unsigned-ipa
+          path: Lexa-unsigned.ipa
+          retention-days: 30
