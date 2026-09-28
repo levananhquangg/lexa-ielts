@@ -210,15 +210,17 @@ struct DailyWordWidget: Widget {
     private static var lang: String { StudySettings.load().interfaceLanguage }
 
     var body: some WidgetConfiguration {
-        WidgetConfiguration(kind: "DailyWordWidget", provider: WordProvider())
-            .configurationDisplayName(Text(L10n.tr("widget.displayName", Self.lang)))
-            .description(Text(L10n.tr("widget.description", Self.lang)))
-            .supportedFamilies([
-                .systemSmall,
-                .accessoryInline,
-                .accessoryCircular,
-                .accessoryRectangular,
-            ])
+        StaticConfiguration(kind: "DailyWordWidget", provider: WordProvider()) { entry in
+            DailyWordWidgetView(entry: entry)
+        }
+        .configurationDisplayName(Text(L10n.tr("widget.displayName", Self.lang)))
+        .description(Text(L10n.tr("widget.description", Self.lang)))
+        .supportedFamilies([
+            .systemSmall,
+            .accessoryInline,
+            .accessoryCircular,
+            .accessoryRectangular,
+        ])
     }
 }
 
