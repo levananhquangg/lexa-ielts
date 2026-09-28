@@ -34,10 +34,16 @@ jobs:
             | tee build.log | grep -E "(error|warning: .*Lexa|BUILD)" || true
           grep -q "BUILD SUCCEEDED" build.log
 
-      - name: Package unsigned IPA
+      - name: Ad-hoc sign and package IPA
         run: |
           mkdir -p Payload
           cp -R "build/Build/Products/Release-iphoneos/Lexa.app" Payload/
+          APP="Payload/Lexa.app"
+          # Sign inside-out so the re-signing tools (Sideloadly/AltStore)
+          # pick up the entitlements, incl. the App Group, for the extension.
+          codesign --force --sign - --entitlements Widget/LexaWidget.entitlements "$APP/PlugIns/LexaWidget.appex"
+          codesign --force --sign - --entitlements App/Lexa.entitlements "$APP"
+          codesign --verify --deep "$APP" && echo "codesign verify OK"
           zip -qr Lexa-unsigned.ipa Payload
           ls -lh Lexa-unsigned.ipa
 
