@@ -72,9 +72,10 @@ private struct AnimatedMesh: View {
     ]
 
     private static func offset(_ p: SIMD2<Float>, t: Double) -> SIMD2<Float> {
-        let phase = Float(p.x * 3.1 + p.y * 5.7)
-        let dx = Float(sin(t * 0.21 + phase)) * 0.07
-        let dy = Float(cos(t * 0.17 + phase * 1.3)) * 0.06
+        let tf = Float(t)
+        let phase = p.x * 3.1 + p.y * 5.7
+        let dx = sin(tf * 0.21 + phase) * 0.07
+        let dy = cos(tf * 0.17 + phase * 1.3) * 0.06
         return SIMD2<Float>(min(1, max(0, p.x + dx)), min(1, max(0, p.y + dy)))
     }
 

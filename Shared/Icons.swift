@@ -57,6 +57,15 @@ struct AppIconView: View {
     var lineWidth: CGFloat = 1.7
     var filled: Bool = false
 
+    init(_ icon: AppIcon, size: CGFloat = 22, color: Color = Palette.ink,
+         lineWidth: CGFloat = 1.7, filled: Bool = false) {
+        self.icon = icon
+        self.size = size
+        self.color = color
+        self.lineWidth = lineWidth
+        self.filled = filled
+    }
+
     var body: some View {
         let path = IconPainter.path(icon.rawValue)
             .applying(CGAffineTransform(scaleX: size / 24, y: size / 24))

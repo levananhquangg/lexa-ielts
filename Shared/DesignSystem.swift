@@ -90,13 +90,20 @@ private struct GlassSurface: ViewModifier {
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-        if #available(iOS 26.0, *) {
-            content.glassEffect(.regular, in: shape)
-        } else {
-            content
-                .background(.ultraThinMaterial, in: shape)
-                .overlay(shape.strokeBorder(Palette.hairline, lineWidth: 1))
-        }
+        content
+            .background(.ultraThinMaterial, in: shape)
+            .overlay(
+                shape.strokeBorder(Palette.hairline, lineWidth: 1)
+            )
+            .overlay(
+                // Glass sheen: a faint top highlight across the surface.
+                LinearGradient(
+                    colors: [.white.opacity(0.22), .white.opacity(0.02), .clear],
+                    startPoint: .top, endPoint: .center
+                )
+                .clipShape(shape)
+                .allowsHitTesting(false)
+            )
     }
 }
 
